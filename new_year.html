@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b1a">
+  <title>New Year's Eve Countdown</title>
+  <style>
+    :root { color-scheme: dark; --ink:#f8f7ff; --muted:#aaa9c4; --accent:#b7a6ff; }
+    * { box-sizing:border-box; }
+    html, body { min-height:100%; margin:0; }
+    body {
+      min-height:100vh; display:grid; place-items:center; overflow:hidden;
+      color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(ellipse at 50% 110%, rgba(115,82,214,.28), transparent 48%),
+        radial-gradient(ellipse at 15% 15%, rgba(39,116,164,.20), transparent 34%),
+        linear-gradient(145deg,#080a18 0%,#11112b 52%,#090b1b 100%);
+    }
+    .stars, .stars::before, .stars::after { position:fixed; inset:0; pointer-events:none; content:""; }
+    .stars { opacity:.55; background-image:radial-gradient(2px 2px at 12% 22%,#fff 45%,transparent 55%),radial-gradient(1px 1px at 72% 18%,#fff 45%,transparent 55%),radial-gradient(2px 2px at 88% 62%,#d9d1ff 45%,transparent 55%),radial-gradient(1px 1px at 34% 76%,#fff 45%,transparent 55%),radial-gradient(1px 1px at 56% 43%,#fff 45%,transparent 55%); }
+    .stars::before { opacity:.5; background-image:radial-gradient(1px 1px at 25% 48%,#fff 45%,transparent 55%),radial-gradient(2px 2px at 64% 83%,#d9d1ff 45%,transparent 55%),radial-gradient(1px 1px at 93% 28%,#fff 45%,transparent 55%); }
+    main { width:min(100% - 36px, 960px); text-align:center; position:relative; padding:64px 0; }
+    .eyebrow { color:var(--accent); text-transform:uppercase; letter-spacing:.32em; font-size:.72rem; font-weight:700; }
+    h1 { margin:20px 0 12px; font-size:clamp(2.6rem,8vw,6.2rem); line-height:.98; letter-spacing:-.065em; font-weight:800; }
+    h1 span { color:var(--accent); }
+    .sub { color:var(--muted); font-size:clamp(.95rem,2vw,1.12rem); margin:0 auto 54px; }
+    .timer { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(10px,3vw,26px); }
+    .unit { min-width:0; padding:clamp(16px,3vw,30px) 8px 22px; border:1px solid rgba(214,207,255,.16); border-radius:22px; background:linear-gradient(155deg,rgba(255,255,255,.09),rgba(255,255,255,.025)); box-shadow:0 18px 60px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.08); backdrop-filter:blur(12px); }
+    .number { display:block; font-variant-numeric:tabular-nums; font-size:clamp(2.8rem,9vw,7rem); font-weight:750; line-height:1; letter-spacing:-.07em; text-shadow:0 0 34px rgba(183,166,255,.2); }
+    .label { display:block; margin-top:14px; color:var(--muted); font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; font-weight:700; }
+    .note { margin:38px 0 0; color:#8887a8; font-size:.82rem; }
+    .spark { display:inline-block; margin:0 9px; color:var(--accent); }
+    @media(max-width:520px) {
+      main { padding:42px 0; }
+      .sub { margin-bottom:34px; }
+      .timer { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+      .unit { border-radius:17px; padding:22px 8px 18px; }
+      .number { font-size:clamp(3.5rem,16vw,5.2rem); }
+      .note { margin-top:28px; }
+    }
+    @media(prefers-reduced-motion:no-preference) {
+      .unit { animation:rise .8s both; }
+      .unit:nth-child(2) { animation-delay:.08s; }
+      .unit:nth-child(3) { animation-delay:.16s; }
+      .unit:nth-child(4) { animation-delay:.24s; }
+      @keyframes rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <main>
+    <div class="eyebrow">The countdown is on</div>
+    <h1>Hello, <span>2027.</span></h1>
+    <p class="sub" id="subtitle">A fresh year. A thousand possibilities.</p>
+    <section class="timer" aria-label="Time remaining until New Year's Day">
+      <div class="unit"><span class="number" id="days">000</span><span class="label">Days</span></div>
+      <div class="unit"><span class="number" id="hours">00</span><span class="label">Hours</span></div>
+      <div class="unit"><span class="number" id="minutes">00</span><span class="label">Minutes</span></div>
+      <div class="unit"><span class="number" id="seconds">00</span><span class="label">Seconds</span></div>
+    </section>
+    <p class="note"><span class="spark">✦</span> Counting down to midnight, December 31, 2026 <span class="spark">✦</span></p>
+  </main>
+  <script>
+    // Uses the visitor's local time zone.
+    const target = new Date(2027, 0, 1, 0, 0, 0);
+    const fields = {
+      days: document.getElementById('days'),
+      hours: document.getElementById('hours'),
+      minutes: document.getElementById('minutes'),
+      seconds: document.getElementById('seconds')
+    };
+    const pad = n => String(n).padStart(2, '0');
+    function tick() {
+      const remaining = Math.max(0, target.getTime() - Date.now());
+      const total = Math.floor(remaining / 1000);
+      const days = Math.floor(total / 86400);
+      const hours = Math.floor((total % 86400) / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const seconds = total % 60;
+      fields.days.textContent = String(days).padStart(3, '0');
+      fields.hours.textContent = pad(hours);
+      fields.minutes.textContent = pad(minutes);
+      fields.seconds.textContent = pad(seconds);
+      if (remaining === 0) {
+        document.getElementById('subtitle').textContent = 'Happy New Year! Here’s to what comes next.';
+      }
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
